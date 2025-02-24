@@ -50,7 +50,7 @@ test=get_data()
 # print([e+1 for e in range(len(test["generation_unit"]["Unit #"]))])
 # print(len(test["generation_unit"]["Unit #"]))
 
-print(np.mean(test["wind_farm"]["wind_farm 1"])*100)
+print(np.mean(test["wind_farm"]["wind_farm 1"])*200)  #200 is the capacity
 # print([np.mean(values) for values in test["wind_farm"].values()])
 
 offre=[152, 152, 350, 591, 60, 155, 155, 400, 400, 300, 300, 350]
@@ -60,40 +60,47 @@ print(offre)
     
 
 
-# ####### Print Supply and Offer curves
-# import matplotlib.pyplot as plt
-# import numpy as np
+####### Print Supply and Offer curves
+import matplotlib.pyplot as plt
+import numpy as np
 
-# # Données
-# demand = 2650.5  # MW
-# supply_quantities = [152, 152, 350, 591, 60, 155, 155, 400, 400, 300, 300, 350, 
-#                      66.02668138964893, 69.90705836674121, 69.09000109053993, 
-#                      60.93791955818926, 64.88591062635679, 62.98944854324062]
-# bidding_prices = [13.32, 13.32, 20.7, 20.93, 26.11, 10.52, 6.02, 5.47, 0, 0, 
-#                   10.52, 10.89, 0, 0, 0, 0, 0, 0]
+# Données
+#demand = 2650.5  # MW
+demand=[2650.5,2550.5, 2500, 1900, 1530, 1200, 800, 648, 500, 200, 0]
+demand_bidding_prices=[0,10.39, 12.2, 12.8, 13.4, 14.0, 16.3, 18.2, 20.1, 24, 24]
 
-# # Tracer l'offre
 
-# sorted_indices = np.argsort(bidding_prices)       # Trier par prix croissant
-# print("ind",sorted_indices)
-# sorted_prices = np.array(bidding_prices)[sorted_indices]
-# print("pri",sorted_prices)
-# sorted_supply= np.array(supply_quantities)[sorted_indices]
-# sorted_cumulative_supply = np.cumsum(sorted_supply) 
+supply_quantities = [152, 152, 350, 591, 60, 155, 155, 400, 400, 300, 300, 350, 
+                     2*66.02668138964893, 2*69.90705836674121, 2*69.09000109053993, 
+                     2*60.93791955818926, 2*64.88591062635679, 2*62.98944854324062]
+generators_bidding_prices = [13.32, 13.32, 20.7, 20.93, 26.11, 10.52, 6.02, 5.47, 0, 0, 
+                  10.52, 10.89, 0, 0, 0, 0, 0, 0]
 
-# # Tracer la courbe
-# plt.figure(figsize=(10, 6))
-# plt.step(sorted_cumulative_supply, sorted_prices, where='post', label="Supply", color='orange')
+# Tracer l'offre
+
+sorted_indices = np.argsort(generators_bidding_prices)       # Trier par prix croissant
+print("ind",sorted_indices)
+sorted_prices = np.array(generators_bidding_prices)[sorted_indices]
+print("pri",sorted_prices)
+sorted_supply= np.array(supply_quantities)[sorted_indices]
+sorted_cumulative_supply = np.cumsum(sorted_supply) 
+
+# Plot the supply curve
+plt.figure(figsize=(10, 6))
+plt.step(sorted_cumulative_supply, sorted_prices, where='post', label="Supply", color='orange')
 
 # # Tracer la demande constante
 # plt.axvline(x=demand, color='blue', linestyle='--', label="Demand (2650 MW)")
 
-# # Ajouter des annotations et des styles
-# plt.ylabel("Price")
-# plt.xlabel("Quantity (MW)")
-# plt.title("Supply and Demand")
-# plt.legend()
-# plt.grid(True)
+#Plot the demand curve
+plt.step(demand, demand_bidding_prices, where='post', label="Demand", color='blue')
 
-# # Afficher le graphique
-# plt.show()
+# Ajouter des annotations et des styles
+plt.ylabel("Price")
+plt.xlabel("Quantity (MW)")
+plt.title("Supply and Demand")
+plt.legend()
+plt.grid(True)
+
+# Afficher le graphique
+plt.show()

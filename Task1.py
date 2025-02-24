@@ -15,9 +15,6 @@ U_d=20 #Demand bid price
 model = ConcreteModel()
 
 # Sets
-# model.init_conv_G = Set(initialize=[e+1 for e in range(len(data["generation_unit"]["Unit #"]))])
-# model.init_wind_farm = Set(initialize=[e+1 for e in range(len(data["wind_farm"]))])
-
 model.init_conv_G = Set(initialize=[e+1 for e in range(12)])
 model.init_wind_farm = Set(initialize=[e+1 for e in range(6)])
 
@@ -30,11 +27,7 @@ model.p_wind_farm = Var(model.init_wind_farm, within=NonNegativeReals, initializ
 #Parameters
 model.Pmax_convG=Param(model.init_conv_G, initialize={i+1: pmax for i, pmax in enumerate(data["generation_unit"]["Pmax (MW)"])})
 model.Pmin_convG=Param(model.init_conv_G, initialize={i+1: pmin for i, pmin in enumerate(data["generation_unit"]["Pmin (MW)"])})
-#model.Pmax_wind_farm=Param(model.init_wind_farm, initialize=wind_farm_capacity)
-
 model.Pini_convG=Param(model.init_conv_G, initialize={i+1: pmax for i, pmax in enumerate(data["generation_unit"]["Pini_i"])})
-model.MaxRampUp=Param(model.init_conv_G, initialize={i+1: Rmax for i, Rmax in enumerate(data["generation_unit"]["RU (MW/h)"])})
-model.MaxRampDown=Param(model.init_conv_G, initialize={i+1: Rmax for i, Rmax in enumerate(data["generation_unit"]["RD (MW/h)"])})
 
 model.price_conv=Param(model.init_conv_G, initialize={i+1: price for i, price in enumerate(data["generation_unit"]["Ci"])})
 model.price_wind_farm=Param(model.init_wind_farm, initialize = 0)
@@ -50,26 +43,15 @@ def capacity_rule_conv_G(model, i):
     return model.p_conv_G[i] <= model.Pmax_convG[i]
 model.capacity_conv_G_constraint = Constraint(model.init_conv_G, rule=capacity_rule_conv_G)
 
-# def min_capacity_rule_conv_G(model, i):
-#     return model.p_conv_G[i] >= model.Pmin_convG[i]
-# model.min_capacity_conv_G_constraint = Constraint(model.init_conv_G, rule=min_capacity_rule_conv_G)
-
 def capacity_rule_wind_farm(model, i):
-    return model.p_wind_farm[i] <= np.mean(data["wind_farm"][f"wind_farm {i}"])*100
+    return model.p_wind_farm[i] <= np.mean(data["wind_farm"][f"wind_farm {i}"])*wind_farm_capacity
 model.capacity_wind_farm_constraint = Constraint(model.init_wind_farm, rule=capacity_rule_wind_farm)
 
 def balance(model):
     return model.p_demand == sum(model.p_conv_G[i] for i in model.init_conv_G) + sum(model.p_wind_farm[j] for j in model.init_wind_farm)
 model.balance_constraint = Constraint(rule=balance)
 
-# def max_rampup(model,i):
-#     return model.p_conv_G[i] - model.Pini_convG[i] <= model.MaxRampUp[i]
-# model.maxrampup_constraint = Constraint(model.init_conv_G, rule=max_rampup)
-
-# def max_rampdown(model,i):
-#     return model.p_conv_G[i] - model.Pini_convG[i] >= model.MaxRampDown[i]
-# model.maxrampdown_constraint = Constraint(model.init_conv_G, rule=max_rampdown)
-
+# To get the dual variables
 model.dual = Suffix(direction=Suffix.IMPORT)
 
 # Create a solver 
@@ -98,18 +80,14 @@ if solution.solver.termination_condition == TerminationCondition.optimal:
 else:
     print("Solver did not find an optimal solution. MCP cannot be calculated.")
 
-#Profit of each generators
+#Profit of each generators and Utility
 profit= {}
 profit["conventional generators"] = [
     prod * (mcp - price)
-    for prod, price in zip(results["conventional generators"], data["generation_unit"]["Ci"])
-]
+    for prod, price in zip(results["conventional generators"], data["generation_unit"]["Ci"])]
 
 profit["wind farms"] = [value * mcp for value in results["wind farms"]]
 
-
-
-#Utility
 utility=[value *(U_d-mcp) for value in results["load"]]
 
 print("profit", profit, "utility", utility)

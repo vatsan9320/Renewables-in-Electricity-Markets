@@ -55,7 +55,7 @@ model.capacity_conv_G_constraint = Constraint(model.init_conv_G, rule=capacity_r
 # model.min_capacity_conv_G_constraint = Constraint(model.init_conv_G, rule=min_capacity_rule_conv_G)
 
 def capacity_rule_wind_farm(model, i):
-    return model.p_wind_farm[i] <= np.mean(data["wind_farm"][f"wind_farm {i}"])*100
+    return model.p_wind_farm[i] <= np.mean(data["wind_farm"][f"wind_farm {i}"])*200
 model.capacity_wind_farm_constraint = Constraint(model.init_wind_farm, rule=capacity_rule_wind_farm)
 
 def balance(model):

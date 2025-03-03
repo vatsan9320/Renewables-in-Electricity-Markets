@@ -26,7 +26,8 @@ def get_data():
     "Csu_i": [1430.4, 1430.4, 1725, 3056.7, 437, 312, 124, 0, 0, 624, 2298, 2298],
     "Pini_i": [76, 76, 0, 0, 0, 0, 312, 0, 0, 0, 240, 280],
     "Uini_i": [1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1],
-    "Tini_i": [22, 22, -2, -1, -1, -1, 10, -2, -2, -1, 24, 50]}
+    "Tini_i": [22, 22, -2, -1, -1, -1, 10, -2, -2, -1, 24, 50]
+    }
 
     # Demand data from pdf file
     load_data = {
@@ -34,15 +35,17 @@ def get_data():
     "System demand (MW)": [
         1775.835, 1669.815, 1590.3, 1563.795, 1563.795, 1590.3, 1961.37, 2279.43, 
         2517.975, 2544.48, 2544.48, 2517.975, 2517.975, 2517.975, 2464.965, 2464.965, 
-        2623.995, 2650.5, 2650.5, 2544.48, 2411.955, 2199.915, 1934.865, 1669.815 ]}
+        2623.995, 2650.5, 2650.5, 2544.48, 2411.955, 2199.915, 1934.865, 1669.815 ]
+        }
 
     # Node Location and Distribution of the Total System Demand
     node_demand = {
     "Load #": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
-    "Node": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15, 16, 18, 19, 20],
+    "Node":   [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15, 16, 18, 19, 20],
     "percentage of system load": [3.8, 3.4, 6.3, 2.6, 2.5, 4.8, 4.4, 6.0, 6.1, 6.8, 9.3, 6.8, 11.1, 3.5, 11.7, 6.4, 4.5 ],
     "Load distribution peak" : [np.max(load_data["System demand (MW)"])*x/100 for x in [3.8, 3.4, 6.3, 2.6, 2.5, 4.8, 4.4, 6.0, 6.1, 6.8, 9.3, 6.8, 11.1, 3.5, 11.7, 6.4, 4.5]],
-    "Bid price" : [25, 22, 15.4, 12.5, 13, 14, 24, 15, 12.8, 17.8, 29.3, 28, 16.9, 30, 18, 16, 21]}
+    "Bid price" : [25, 22, 15.4, 12.5, 13, 14, 24, 15, 12.8, 17.8, 29.3, 28, 16.9, 30, 18, 16, 21]
+    }
     
     #Wind farms data : We extract the production of the 24 first hours of each first dataset from each zone (1 zone 1 file)
     wind_farm = {}
@@ -50,4 +53,36 @@ def get_data():
     for i in range(len(file_path)):
         wind_farm[f"wind_farm {i+1}"] = pd.read_csv(file_path[i])["V1"].head(24).tolist()
 
-    return {"generation_unit" : generating_unit_data, "load" : load_data,  "wind_farm" : wind_farm, "node_demand" : node_demand}
+    #Battery data
+    # #When no battery
+    # battery= {
+    #     "Charging efficiency": 0.85,
+    #     "Discharging efficiency": 0.9,
+    #     "Charging capacity (MW)": 0,
+    #     "Discharging capacity (MW)": 0,
+    #     "Energy storage capacity (MWh)" : 0
+    # }
+    #when battery
+    battery= {
+        "Charging efficiency": 0.85,
+        "Discharging efficiency": 0.90,
+        "Charging capacity (MW)": 70,
+        "Discharging capacity (MW)": 80,
+        "Energy storage capacity (MWh)" : 400
+    }
+
+    return {"generation_unit" : generating_unit_data, "load" : load_data,  "wind_farm" : wind_farm, "node_demand" : node_demand, "battery": battery}
+
+# test=get_data()
+# # print(test["wind_farm"][f"wind_farm {1}"])
+# # print(test["wind_farm"][f"wind_farm {1}"][0])
+# # print(test["node_demand"]["Load distribution peak"])
+
+
+# # Calcul de la quantité de vent moyenne à chaque heure   ---> il y a très peu de vent pendant l'heure 1
+# list=[]
+# for t in range(24):
+#     list.append([])
+#     for i in range(1,7):
+#         list[t].append(test["wind_farm"][f"wind_farm {i}"][t])
+#     print(f"Hour {t+1}",np.mean(list[t]))

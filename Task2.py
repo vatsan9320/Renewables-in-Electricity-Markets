@@ -122,7 +122,9 @@ model.storage_constraint = Constraint(model.time, rule = storage_operation)
 
 #Balance
 def balance(model, t):
-    return sum(model.p_demand[k,t] for k in model.init_demand) + model.p_charging[t]== sum(model.p_conv_G[i,t] for i in model.init_conv_G) + sum(model.p_wind_farm[j,t] for j in model.init_wind_farm) + model.p_discharging[t]
+    return (sum(model.p_demand[k,t] for k in model.init_demand) + model.p_charging[t]
+            == sum(model.p_conv_G[i,t] for i in model.init_conv_G) 
+            + sum(model.p_wind_farm[j,t] for j in model.init_wind_farm) + model.p_discharging[t])
 model.balance_constraint = Constraint(model.time, rule=balance)
 
 
@@ -166,7 +168,7 @@ if solution.solver.termination_condition == TerminationCondition.optimal:
     
     # Display the MCP for each hour
     for t, price in enumerate(mcp, start=1):
-        print(f"Hour {t}: MCP = {price}")
+        print(f"Hour {t}: MCP = {price:.2f}")
 else:
     print("Solver did not find an optimal solution. MCP cannot be calculated.")
 
